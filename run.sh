@@ -79,7 +79,14 @@ fi
 if [ $NUM_OF_PEERS -gt $CLUSTER_SIZE ]; then
     echo "Joining existing cluster"
 
-    etcdctl member add ${ETCD_NAME} http://${MY_SERVICE_IP}:2380
+    ENDPOINTS=""
+    for peerAddress in $SERVICE_CONTAINERS; do
+        ENDPOINTS="${ENDPOINTS}http://${peerAddress}:2379,"
+    done
+    ENDPOINTS="${ENDPOINTS%?}"
+
+    export ETCDCTL_API=3
+    etcdctl --endpoints="${ENDPOINTS}" member add ${ETCD_NAME} --peer-urls="http://${MY_SERVICE_IP}:2380"
     if [ $? -ne 0 ]; then
         echo "Error adding new member to cluster"
         exit 1
