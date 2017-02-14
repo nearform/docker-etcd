@@ -36,6 +36,7 @@ done
 while [ -z "$(drill -x $MY_SERVICE_IP | grep $SERVICE_NAME)" ]; do
     echo "Waiting to be added to DNS"
     sleep 1
+    getServiceContainers
 done
 
 # Set node name
