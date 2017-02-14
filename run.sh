@@ -45,7 +45,7 @@ if [ $NUM_OF_PEERS -gt 1 ]; then
 
         for peerAddress in $SERVICE_CONTAINERS; do
             peerName=etcd$(drill -x $peerAddress | grep $SERVICE_NAME | cut -f 5 | cut -d'.' -f2)
-            ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER}${peerName}=${peerAddress}:2380,"
+            ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER}${peerName}=http://${peerAddress}:2380,"
         done
 
         ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER%?}"
