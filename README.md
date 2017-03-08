@@ -1,25 +1,50 @@
-##Itty bitty Etcd container
+# Docker Etcd
 
-***NOTE: The tags have recently been updated!  Use elcolio/etcd:2.0.X for a specific version.  The current latest is 2.0.10***
+This image is based on Alpine Linux 3.5. The `-data-dir` is a volume mounted to `/data`, and the default ports are bound to Etcd and exposed. This image DOES NOT expose the old, deprecated etcd ports. It only exposes ports 2379 and 2380.
 
-This image weighs in at 20.17 MB due to the inclusion of TLS support and etcdctl.  The `-data-dir` is a volume mounted to `/data`, and the default ports are bound to Etcd and exposed.
+## Environment Variables
 
-Recently added a run script so that http is not hard-coded into the Dockerfile (for running over SSL).  Just overwrite `$CLIENT_URLS` and `$PEER_URLS` at runtime (these are the **listening** URLs).  You'll still need to set the `-advertise-client-urls` and `-initial-advertise-peer-urls` flags if the container will be part of a cluster.
+These settings may be overwritten by defining the variables at run time or passing them as CLI flags to the container. CLI flags override any environment variables with the same name.
 
-Since the image uses an `ENTRYPOINT` it accepts passthrough arguments to etcd.
+- `SERVICE_NAME` - The service name when using a Swarm cluster. Will be auto-detected if not given.
+- `CLUSTER_SIZE` - The initial size of a cluster. Defaults to 1.
+- `ETCD_NAME` - This will be unique when running as a service on Swarm, defaults to `etcd` when running as a standalone container.
+- `ETCD_LISTEN_CLIENT_URLS` - Defaults to `http://0.0.0.0:2379`.
+- `ETCD_ADVERTISE_CLIENT_URLS` -  Defaults to `http://$IP_OF_CONTAINER:2379`, manually define this if running as a single container.
+- `ETCD_LISTEN_PEER_URLS` -  Defaults to `http://0.0.0.0:2380`, only used if starting as cluster.
+- `ETCD_INITIAL_ADVERTISE_PEER_URLS ` - Defaults to `http://$IP_OF_CONTAINER:2379`,  only used if starting as cluster.
+- `ETCD_INITIAL_CLUSTER` - The image will use Swarm DNS to generate an appropiate INITIAL_CLUSTER setting, only used if starting as cluster.
+
+## Using the image
+
+### Single node "cluster"
 
 ```sh
 docker run \
   -d \
   -p 2379:2379 \
-  -p 2380:2380 \
-  -p 4001:4001 \
-  -p 7001:7001 \
-  -v /data/backup/dir:/data \
+  -e 'ETCD_ADVERTISE_CLIENT_URLS=http://192.168.1.99:2379' \
   --name some-etcd \
-  elcolio/etcd:latest \
-  -name some-etcd \
-  -discovery=https://discovery.etcd.io/blahblahblahblah \
-  -advertise-client-urls http://192.168.1.99:4001 \
-  -initial-advertise-peer-urls http://192.168.1.99:7001
+  lfkeitel/etcd:latest
 ```
+
+### Docker Swarm
+
+When using this image as a cluster, you MUST give the environment variable `CLUSTER_SIZE` so the containers can cluster together correctly:
+
+```sh
+docker service create \
+  --name etcd \
+  -e 'CLUSTER_SIZE=3' \
+  -e 'ETCD_ADVERTISE_CLIENT_URLS=http://192.168.56.101:2379,http://192.168.56.102:2379' \
+  --replicas=3 \
+  --publish 2379:2379
+  --network=etcd \
+  lfkeitel/etcd:latest
+```
+
+## Scaling Up Swarm Service
+
+This image can handle new containers being added to the Swarm service. The container will run etcdctl to add itself as a new member then attempt to run etcd.
+
+**WARNING**: Only scale up the service ONE AT A TIME. If the service is scaled up more than one at a time, the containers may not join the cluster correctly. Then you're stuck with having to rebuild the cluster unless you're lucky enough to scale down and it kills one of the problematic containers. This is being worked on. You have been warned.
