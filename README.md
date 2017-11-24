@@ -1,6 +1,6 @@
 # Docker Etcd
 
-This image is based on Alpine Linux 3.5. This image exposes ports 2379 and 2380. It is able to run with any (arbitrary) user. This container complies with the OpenShift non-root user policy.
+This image is based on Alpine Linux 3.6. This image exposes ports 2379 and 2380. It is able to run with any (arbitrary) user. This container complies with the OpenShift non-root user [policy](https://www.cncf.io/projects/).
 
 ## Using the image
 
