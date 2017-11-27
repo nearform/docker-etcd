@@ -17,6 +17,6 @@ docker run \
 
 ### Multi node example
 
-As simple docker-compose example is included in the (repo)[https://github.com/nearform/docker-etcd/blob/3.2.10/docker-compose.yml]
+As simple docker-compose example is included in the [repo](https://github.com/nearform/docker-etcd/blob/master/docker-compose.yml)
 
 Have a look at the helm chart [here](https://github.com/nearform/charts/tree/master/incubator/etcd)
