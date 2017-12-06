@@ -4,7 +4,7 @@ LABEL name "Docker ETCD"
 LABEL version "1.0.0"
 LABEL maintainer "Alex Knol <alex.knol@nearform.com>"
 
-ARG ETCD_VERSION=3.2.10
+ARG ETCD_VERSION=3.2.11
 
 RUN mkdir /etcd && \
     chgrp -R 0 /etcd && \
